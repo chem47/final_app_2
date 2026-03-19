@@ -6,14 +6,59 @@
 # ライブラリの読み込み
 ############################################################
 import streamlit as st
-from pathlib import Path
 import utils
 import constants as ct
+from pathlib import Path
 
 
 ############################################################
 # 関数定義
 ############################################################
+
+def display_app_title():
+    """
+    タイトル表示
+    """
+    st.markdown(f"## {ct.APP_NAME}")
+
+
+def display_select_mode():
+    """
+    回答モードのラジオボタンをサイドバーに表示
+    """
+    with st.sidebar:
+        st.markdown("## 利用目的")
+        st.session_state.mode = st.radio(
+            label="",
+            options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
+            label_visibility="collapsed"
+        )
+
+def display_sidebar_description():
+    """
+    サイドバーに機能説明と入力例を表示
+    """
+    with st.sidebar:
+        st.divider()
+
+        st.markdown("### 「社内文書検索」を選択した場合")
+        st.info("入力内容と関連性が高い社内文書のありかを検索できます。")
+        st.code("【入力例】\n社員の育成方針に関するMTGの議事録", wrap_lines=True, language=None)
+
+        st.markdown("### 「社内問い合わせ」を選択した場合")
+        st.info("質問・要望に対して、社内文書の情報をもとに回答を得られます。")
+        st.code("【入力例】\n人事部に所属している従業員情報を一覧化して", wrap_lines=True, language=None)
+
+def display_initial_ai_message():
+    """
+    AIメッセージの初期表示
+    """
+    with st.chat_message("assistant"):
+        st.success(
+            "こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。"
+            "サイドバーで利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。"
+        )
+        st.warning("具体的に入力したほうが期待通りの回答を得やすいです。")
 
 def format_source_with_page(file_path, page_number=None):
     """
@@ -39,50 +84,6 @@ def format_source_with_page(file_path, page_number=None):
     display_page_number = page_number + 1
 
     return f"{file_path}（ページNo.{display_page_number}）"
-
-
-def display_app_title():
-    """
-    タイトル表示
-    """
-    st.markdown(f"## {ct.APP_NAME}")
-
-
-def display_select_mode():
-    """
-    回答モードのラジオボタンを表示
-    """
-    # 回答モードを選択する用のラジオボタンを表示
-    col1, col2 = st.columns([100, 1])
-    with col1:
-        # 「label_visibility="collapsed"」とすることで、ラジオボタンを非表示にする
-        st.session_state.mode = st.radio(
-            label="",
-            options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
-            label_visibility="collapsed"
-        )
-
-
-def display_initial_ai_message():
-    """
-    AIメッセージの初期表示
-    """
-    with st.chat_message("assistant"):
-        # 「st.success()」とすると緑枠で表示される
-        st.markdown("こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。上記で利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。")
-
-        # 「社内文書検索」の機能説明
-        st.markdown("**【「社内文書検索」を選択した場合】**")
-        # 「st.info()」を使うと青枠で表示される
-        st.info("入力内容と関連性が高い社内文書のありかを検索できます。")
-        # 「st.code()」を使うとコードブロックの装飾で表示される
-        # 「wrap_lines=True」で折り返し設定、「language=None」で非装飾とする
-        st.code("【入力例】\n社員の育成方針に関するMTGの議事録", wrap_lines=True, language=None)
-
-        # 「社内問い合わせ」の機能説明
-        st.markdown("**【「社内問い合わせ」を選択した場合】**")
-        st.info("質問・要望に対して、社内文書の情報をもとに回答を得られます。")
-        st.code("【入力例】\n人事部に所属している従業員情報を一覧化して", wrap_lines=True, language=None)
 
 
 def display_conversation_log():
@@ -113,18 +114,17 @@ def display_conversation_log():
 
                         # 参照元のありかに応じて、適したアイコンを取得
                         icon = utils.get_source_icon(message['content']['main_file_path'])
-                        # 参照元ドキュメントのページ番号が取得できた場合にのみ、ページ番号を表示
+                        # 参照元ドキュメントのページ番号が取得できた場合にのみ、ページ番号を表示１
                         if "main_page_number" in message["content"]:
                             main_file_info = format_source_with_page(
-                                message["content"]["main_file_path"],
-                                message["content"]["main_page_number"]
+                                message['content']['main_file_path'], 
+                                message['content']['main_page_number']
                             )
-                            st.success(main_file_info, icon=icon)
                         else:
                             main_file_info = format_source_with_page(
-                                message["content"]["main_file_path"]
+                            message["content"]["main_file_path"]
                             )
-                            st.success(main_file_info, icon=icon)
+                        st.success(main_file_info, icon=icon)
                         
                         # ==========================================
                         # ユーザー入力値と関連性が高いサブドキュメントのありかを表示
@@ -140,15 +140,12 @@ def display_conversation_log():
                                 # 参照元ドキュメントのページ番号が取得できた場合にのみ、ページ番号を表示
                                 if "page_number" in sub_choice:
                                     sub_file_info = format_source_with_page(
-                                        sub_choice["source"],
-                                        sub_choice["page_number"]
+                                        sub_choice['source'], 
+                                        sub_choice['page_number']
                                     )
-                                    st.info(sub_file_info, icon=icon)
                                 else:
-                                    sub_file_info = format_source_with_page(
-                                        sub_choice["source"]
-                                    )
-                                    st.info(sub_file_info, icon=icon)
+                                    sub_file_info = format_source_with_page(sub_choice["source"])
+                                st.info(sub_file_info, icon=icon)
                     # ファイルのありかの情報が取得できなかった場合、LLMからの回答のみ表示
                     else:
                         st.markdown(message["content"]["answer"])
@@ -166,11 +163,8 @@ def display_conversation_log():
                         st.markdown(f"##### {message['content']['message']}")
                         # ドキュメントのありかを一覧表示
                         for file_info in message["content"]["file_info_list"]:
-                            # ページ番号付き表示文字列からでも拡張子判定できるように、
-                            # 「（ページNo.xxx）」より前だけをアイコン判定に使用
-                            file_path_for_icon = file_info.split("（ページNo.")[0]
                             # 参照元のありかに応じて、適したアイコンを取得
-                            icon = utils.get_source_icon(file_path_for_icon)
+                            icon = utils.get_source_icon(file_info)
                             st.info(file_info, icon=icon)
 
 
@@ -203,13 +197,13 @@ def display_search_llm_response(llm_response):
         if "page" in llm_response["context"][0].metadata:
             # ページ番号を取得
             main_page_number = llm_response["context"][0].metadata["page"]
-            # 「メインドキュメントのファイルパス」と「ページ番号」を表示
             main_file_info = format_source_with_page(main_file_path, main_page_number)
-            st.success(main_file_info, icon=icon)
+            # 「メインドキュメントのファイルパス」と「ページ番号」を表示
+            st.success(f"{main_file_info}", icon=icon)
         else:
-            # 「メインドキュメントのファイルパス」を表示
             main_file_info = format_source_with_page(main_file_path)
-            st.success(main_file_info, icon=icon)
+            # 「メインドキュメントのファイルパス」を表示
+            st.success(f"{main_file_info}", icon=icon)
 
         # ==========================================
         # ユーザー入力値と関連性が高いサブドキュメントのありかを表示
@@ -262,15 +256,10 @@ def display_search_llm_response(llm_response):
                 # ページ番号が取得できない場合のための分岐処理
                 if "page_number" in sub_choice:
                     # 「サブドキュメントのファイルパス」と「ページ番号」を表示
-                    sub_file_info = format_source_with_page(
-                        sub_choice["source"],
-                        sub_choice["page_number"]
-                    )
-                    st.info(sub_file_info, icon=icon)
+                    st.info(f"{sub_choice['source']}", icon=icon)
                 else:
                     # 「サブドキュメントのファイルパス」を表示
-                    sub_file_info = format_source_with_page(sub_choice["source"])
-                    st.info(sub_file_info, icon=icon)
+                    st.info(f"{sub_choice['source']}", icon=icon)
         
         # 表示用の会話ログに格納するためのデータを用意
         # - 「mode」: モード（「社内文書検索」or「社内問い合わせ」）
@@ -347,10 +336,10 @@ def display_contact_llm_response(llm_response):
                 # ページ番号を取得
                 page_number = document.metadata["page"]
                 # 「ファイルパス」と「ページ番号」
-                file_info = format_source_with_page(file_path, page_number)
+                file_info = f"{file_path}"
             else:
                 # 「ファイルパス」のみ
-                file_info = format_source_with_page(file_path)
+                file_info = f"{file_path}"
 
             # 参照元のありかに応じて、適したアイコンを取得
             icon = utils.get_source_icon(file_path)
