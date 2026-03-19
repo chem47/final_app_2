@@ -62,6 +62,9 @@ cn.display_app_title()
 # モード表示
 cn.display_select_mode()
 
+# サイドバーに機能説明と入力例を表示 問題３の回答
+cn.display_sidebar_description()
+
 # AIメッセージの初期表示
 cn.display_initial_ai_message()
 
