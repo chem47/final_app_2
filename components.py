@@ -27,7 +27,7 @@ def display_select_mode():
     回答モードのラジオボタンをサイドバーに表示
     """
     with st.sidebar:
-        st.markdown("## 利用目的目的")
+        st.markdown("## 利用目的")
         st.session_state.mode = st.radio(
             label="",
             options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
@@ -188,8 +188,7 @@ def display_search_llm_response(llm_response):
         main_file_path = llm_response["context"][0].metadata["source"]
 
         # 補足メッセージの表示
-        main_message = "入力内容に関する情報は、以下のファイルに含まれている可能性があります。B"
-        st.markdown(llm_response["context"][0].metadata)
+        main_message = "入力内容に関する情報は、以下のファイルに含まれている可能性があります。"
         st.markdown(main_message)
         
         # 参照元のありかに応じて、適したアイコンを取得
