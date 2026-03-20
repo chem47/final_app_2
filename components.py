@@ -27,7 +27,7 @@ def display_select_mode():
     回答モードのラジオボタンをサイドバーに表示
     """
     with st.sidebar:
-        st.markdown("## 利用目的A")
+        st.markdown("## 利用目的目的")
         st.session_state.mode = st.radio(
             label="",
             options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
