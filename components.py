@@ -189,6 +189,7 @@ def display_search_llm_response(llm_response):
 
         # 補足メッセージの表示
         main_message = "入力内容に関する情報は、以下のファイルに含まれている可能性があります。"
+        st.write(llm_response["context"][0].metadata)
         st.markdown(main_message)
         
         # 参照元のありかに応じて、適したアイコンを取得
