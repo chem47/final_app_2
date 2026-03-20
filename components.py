@@ -188,7 +188,7 @@ def display_search_llm_response(llm_response):
         main_file_path = llm_response["context"][0].metadata["source"]
 
         # 補足メッセージの表示
-        main_message = "入力内容に関する情報は、以下のファイルに含まれている可能性があります。"
+        main_message = "入力内容に関する情報は、以下のファイルに含まれている可能性があります。A"
         st.markdown(llm_response["context"][0].metadata)
         st.markdown(main_message)
         
